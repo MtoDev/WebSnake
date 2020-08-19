@@ -1,0 +1,29 @@
+body {
+    background-color: #ddddbb;
+}
+
+#gameCanvas {
+    position: relative;
+    left: 50%;
+    transform: translate(-50%, 0);
+    border: 2px solid black;
+}
+
+#gameTitle, #score, #bestScore, #theEnd {
+    text-align: center;
+    font-size: 80px;
+    font-family: 'Lucida Console', monospace;
+}
+
+#btnPlayAgain {
+    display: inline-block;
+    border: 2px solid black;
+    font-size: 20px;				
+    padding: 10px;
+    vertical-align: middle;
+    cursor: pointer;
+}
+
+#btnPlayAgain:hover {
+    background-color: white;
+}
