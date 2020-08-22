@@ -15,6 +15,7 @@ p {
 
 #btnPlayAgain {
     display: inline-block;
+    background-color: #ff9e9e;
     border: 2px solid black;
     font-size: 20px;				
     padding: 10px;
