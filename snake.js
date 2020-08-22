@@ -2,16 +2,16 @@
 const GAME_SPEED_CONST = 100;
 var GAME_SPEED = GAME_SPEED_CONST;
 const CANVAS_BORDER_COLOUR = 'black';
-const CANVAS_BACKGROUND_COLOUR = "white";
+const CANVAS_BACKGROUND_COLOUR = "#a2d483";
 const CANVAS_END_GAME_BACKGROUND_COLOUR = '#ff9e9e';
 const SNAKE_HEAD_COLOUR = '#174f21';
 const SNAKE_COLOUR1 = 'LimeGreen';
 const SNAKE_COLOUR2 = 'LimeGreen';
-  const SNAKE_BORDER_COLOUR = 'darkgreen';
-  const FOOD_COLOUR = 'red';
-  const BAD_FOOD_COLOUR = 'blue';
+const SNAKE_BORDER_COLOUR = 'darkgreen';
+const FOOD_COLOUR = 'gold';
+const BAD_FOOD_COLOUR = 'red';
 const FOOD_BORDER_COLOUR = 'darkred';
-  const gameCanvasWidth = document.getElementById("gameCanvas").width;
+const gameCanvasWidth = document.getElementById("gameCanvas").width;
 const gameCanvasHeight = document.getElementById("gameCanvas").height;
 
 var badFoodCreated = false;
@@ -22,23 +22,39 @@ var badFoodY = -1;
 var endGame = false;
 
 let snake = [
-    {x: (gameCanvasWidth / 2), y: gameCanvasHeight / 2},  	// 150, 150
-    {x: (gameCanvasWidth / 2) - 10, y: gameCanvasHeight / 2},	// 140, 150
-    {x: (gameCanvasWidth / 2) - 20, y: gameCanvasHeight / 2},	// 130, 150
-    {x: (gameCanvasWidth / 2) - 30, y: gameCanvasHeight / 2},	// 120, 150
-    {x: (gameCanvasWidth / 2) - 40, y: gameCanvasHeight / 2}	// 110, 150
+    {x: (gameCanvasWidth / 2),      y: gameCanvasHeight / 2},
+    {x: (gameCanvasWidth / 2) - 10, y: gameCanvasHeight / 2},
+    {x: (gameCanvasWidth / 2) - 20, y: gameCanvasHeight / 2},
+    {x: (gameCanvasWidth / 2) - 30, y: gameCanvasHeight / 2},
+    {x: (gameCanvasWidth / 2) - 40, y: gameCanvasHeight / 2}
 ];
 
-// game score
-let score = 0;
-// When set to true the snake is changing direction
-let changingDirection = false;
-// Horizontal velocity
-let dx = 10;
-// Vertical velocity
-let dy = 0;
+let score = 0; // Game score
+let changingDirection = false; // When set to true the snake is changing direction
+let dx = 10; // Horizontal velocity
+let dy = 0; // Vertical velocity
 
-
+var soundOn = true;
+var sounds =
+	{
+		hurt: {
+			sound: new Howl({
+                urls: ['sounds/hurt.wav']
+			})
+		},
+		pickup: {
+			sound: new Howl({
+				urls: ['sounds/pickup.wav'],
+                volume: 0.7
+			})
+        },
+        gameOver: {
+			sound: new Howl({
+				urls: ['sounds/gameOver.wav'],
+                volume: 0.7
+			})
+		}
+	};
 
 /** MAIN PART OF THE GAME CODE **/
 
@@ -63,11 +79,10 @@ if (typeof(Storage) !== "undefined") {
     bestScore = localStorage.getItem("bestScore");
     document.getElementById("bestScore").innerHTML = 'Best score: ' + (bestScore || 0);
 }
+  
 
 createFood();
 main();
-
-
 
 /** FUNCTIONS **/
 
@@ -78,14 +93,18 @@ main();
 */
 function advanceSnake() {
     const head = {x: snake[0].x + dx, y: snake[0].y + dy};
-    snake.unshift(head);
+    snake.unshift(head);    
 
     // check if head is touching food
     const didEatFood = snake[0].x === foodX && snake[0].y === foodY;
     const didEatBadFood = snake[0].x === badFoodX && snake[0].y === badFoodY;
+
     if (didEatFood) {
         score += 1;
         document.getElementById('score').innerHTML = score;
+
+        sounds.pickup.sound.play();
+
         if (score > bestScore) {
             bestScore = score;
             localStorage.setItem("bestScore", score);
@@ -93,20 +112,29 @@ function advanceSnake() {
         }
 
         if (score == 5)
-            GAME_SPEED = GAME_SPEED_CONST * 0.9;
-        else if (score == 10)
             GAME_SPEED = GAME_SPEED_CONST * 0.8;
-        else if (score == 15)
+        else if (score == 10)
             GAME_SPEED = GAME_SPEED_CONST * 0.7;
+        else if (score == 15)
+            GAME_SPEED = GAME_SPEED_CONST * 0.65;
         else if (score == 20)
             GAME_SPEED = GAME_SPEED_CONST * 0.6;
+        else if (score == 25)
+            GAME_SPEED = GAME_SPEED_CONST * 0.55;
         else if (score == 30)
-            GAME_SPEED = GAME_SPEED_CONST * 0.5;
+            GAME_SPEED = GAME_SPEED_CONST * 0.50;
+        else if (score == 35)
+            GAME_SPEED = GAME_SPEED_CONST * 0.45;
+        else if (score == 40)
+            GAME_SPEED = GAME_SPEED_CONST * 0.4;
 
-        createFood(); // create new food and dont pop snake's elemnet => grow by one
+        createFood(); // create new food and dont pop snake's element => grow by one
     } else if (didEatBadFood) {
         badFoodCreated = false;
         score -= 2;
+
+        sounds.hurt.sound.play();
+
         if (score <= 0) {
             score = 0;
             endGame = true;
@@ -154,19 +182,26 @@ function drawSnakePart(snakePart, i) {
 * addEventListener on document
 */
 function changeDirection(event) {
-    const LEFT_KEY = 37;
-    const RIGHT_KEY = 39;
-    const UP_KEY = 38;
-    const DOWN_KEY = 40;
+    // IMPORTANT! If you use arrow keys then sounds don't work due to play method is not allowed by the user agent or the platform in the current context, possibly because the user denied permission
+    // const LEFT_KEY = 37;    // A 65
+    // const RIGHT_KEY = 39;   // D 68
+    // const UP_KEY = 38;      // W 87
+    // const DOWN_KEY = 40;    // S 83
+
     const ENTER_KEY = 13;
+    const SPACE_KEY = 32;
+    const LEFT_KEY = 65;    // A 65
+    const RIGHT_KEY = 68;   // D 68
+    const UP_KEY = 87;      // W 87
+    const DOWN_KEY = 83;    // S 83
 
     const keyPressed = event.keyCode;
     const goingUp = dy === -10;
     const goingDown = dy === 10;
     const goingRight = dx === 10;
-    const goingLeft = dx === -10;
+    const goingLeft = dx === -10;    
 
-    if (keyPressed === ENTER_KEY) // Restart game (refresh page)
+    if (keyPressed === ENTER_KEY || keyPressed === SPACE_KEY) // Restart game (refresh page)
         window.location.reload();
 
     if (changingDirection) return; // return if we try change direction too quickly (before GAME_SPEED)
@@ -197,13 +232,13 @@ function changeDirection(event) {
 function clearCanvas() {
     ctx.fillStyle = CANVAS_BACKGROUND_COLOUR;
     ctx.strokeStyle = CANVAS_BORDER_COLOUR;
-
     ctx.fillRect(0, 0, gameCanvas.width, gameCanvas.height);
     ctx.strokeRect(0, 0, gameCanvas.width, gameCanvas.height);
 }
 
 function main() {
     if (didGameEnd()) {
+        sounds.gameOver.sound.play();
         document.getElementById('theEnd').style.visibility = 'visible';
         ctx.fillStyle = CANVAS_END_GAME_BACKGROUND_COLOUR;
         ctx.fillRect(0, 0, gameCanvas.width, gameCanvas.height);
@@ -218,12 +253,10 @@ function main() {
         clearCanvas();
         drawFood();
 
-        if (!badFoodCreated) {
+        if (!badFoodCreated)
             createBadFood();
-                                
-        }
-        drawBadFood();	
 
+        drawBadFood();	
         advanceSnake();
         drawSnake();
 
@@ -243,18 +276,10 @@ function createFood() {
 
     snake.forEach(function isFoodOnSnake(part) {
         const foodIsOnSnake = part.x == foodX && part.y == foodY
+
         if (foodIsOnSnake)
             createFood();
     });
-}
-
-function drawFood() {
-    ctx.beginPath();
-    ctx.arc(foodX + 5, foodY + 5, 5, 0, 2 * Math.PI, false);				
-    ctx.fillStyle = FOOD_COLOUR;
-    ctx.strokestyle = FOOD_BORDER_COLOUR;
-    ctx.fill();
-    ctx.stroke();
 }
 
 function createBadFood() {
@@ -265,11 +290,21 @@ function createBadFood() {
         snake.forEach(function isFoodOnSnake(part) {
             const foodIsOnSnake = part.x == badFoodX && part.y == badFoodY;
             const badFoodOnGoodFood = badFoodX == foodX ||badFoodY == foodY;
+
             if (foodIsOnSnake || badFoodOnGoodFood)
                 createBadFood();
         });
         badFoodCreated = true;
     }
+}
+
+function drawFood() {
+    ctx.beginPath();
+    ctx.arc(foodX + 5, foodY + 5, 5, 0, 2 * Math.PI, false);				
+    ctx.fillStyle = FOOD_COLOUR;
+    ctx.strokestyle = FOOD_BORDER_COLOUR;
+    ctx.fill();
+    ctx.stroke();
 }
 
 function drawBadFood() {
@@ -286,7 +321,7 @@ function didGameEnd() {
         const didCollide = snake[i].x === snake[0].x && snake[i].y === snake[0].y;
 
         if (didCollide)
-            return true
+            return true;
     }
 
     const hitLeftWall = snake[0].x < 0;
@@ -294,5 +329,12 @@ function didGameEnd() {
     const hitToptWall = snake[0].y < 0;
     const hitBottomWall = snake[0].y > gameCanvas.height - 10;
 
-    return hitLeftWall || hitRightWall || hitToptWall || hitBottomWall ||endGame
+    if (hitLeftWall || hitRightWall || hitToptWall || hitBottomWall)
+        sounds.hurt.sound.play();
+
+    return hitLeftWall || hitRightWall || hitToptWall || hitBottomWall || endGame;
+}
+
+function playAgain() {
+    window.location.reload();
 }

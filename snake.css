@@ -1,18 +1,17 @@
 body {
-    background-color: #ddddbb;
+    background-color: #ddddbb;    
+    font-family: 'Lucida Console', monospace;
+    text-align: center;
+    font-size: 60px;
 }
 
 #gameCanvas {
     position: relative;
-    left: 50%;
-    transform: translate(-50%, 0);
-    border: 2px solid black;
+    border: 12px ridge rgba(123,65,5,0.75);
 }
 
-#gameTitle, #score, #bestScore, #theEnd {
-    text-align: center;
-    font-size: 80px;
-    font-family: 'Lucida Console', monospace;
+p {
+    font-size: .5em;
 }
 
 #btnPlayAgain {
