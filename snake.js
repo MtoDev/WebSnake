@@ -66,7 +66,7 @@ var sounds =
 if (typeof(Storage) !== "undefined") {
     // Retrieve best score
     bestScore = localStorage.getItem("bestScore");
-    document.getElementById("bestScore").innerHTML = 'Best score: ' + (bestScore || 0);
+    document.getElementById("bestScore").innerHTML = 'BEST SCORE: ' + (bestScore || 0);
 
     // retrieve sound settings
     soundOn = localStorage.getItem("soundOn") == null ? true : localStorage.getItem("soundOn");
@@ -335,7 +335,7 @@ function createBadFood() {
 
         snake.forEach(function isFoodOnSnake(part) {
             const foodIsOnSnake = part.x == badFoodX && part.y == badFoodY;
-            const badFoodOnGoodFood = badFoodX == foodX ||badFoodY == foodY;
+            const badFoodOnGoodFood = badFoodX == foodX || badFoodY == foodY;
 
             if (foodIsOnSnake || badFoodOnGoodFood)
                 createBadFood();

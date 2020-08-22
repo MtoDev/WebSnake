@@ -7,6 +7,7 @@ body {
 
 p {
     font-size: .5em;
+    margin: 0;
 }
 
 #gameCanvas {
@@ -39,4 +40,17 @@ p {
 .score_div {
     position: relative;
     top: -130px;
+}
+
+.yellow {
+    color: gold;
+}
+
+.red {
+    color: red;
+}
+
+.span_c {
+    background-color: rgba(128, 128, 128, 0.1);
+    font-weight: 700;
 }
