@@ -34,7 +34,7 @@ let changingDirection = false; // When set to true the snake is changing directi
 let dx = 10; // Horizontal velocity
 let dy = 0; // Vertical velocity
 
-var soundOn = true;
+var soundOn;
 var sounds =
 	{
 		hurt: {
@@ -62,6 +62,41 @@ var sounds =
 
 /** MAIN PART OF THE GAME CODE **/
 
+// Check browser support for Storage
+if (typeof(Storage) !== "undefined") {
+    // Retrieve best score
+    bestScore = localStorage.getItem("bestScore");
+    document.getElementById("bestScore").innerHTML = 'Best score: ' + (bestScore || 0);
+
+    // retrieve sound settings
+    soundOn = localStorage.getItem("soundOn") == null ? true : localStorage.getItem("soundOn");
+} 
+
+$(function() {
+    if (soundOn === true || soundOn === "true") {
+        if ($("#volume").hasClass('fa-volume-off')) {
+            $("#volume").removeClass('fa-volume-off').addClass('fa-volume-up');
+        }
+    }
+    else {
+        if ($("#volume").hasClass('fa-volume-up')) {
+            $("#volume").removeClass('fa-volume-up').addClass('fa-volume-off');
+        }
+    }
+
+	$('#volume').on('click', function() {
+		if ($(this).hasClass('fa-volume-up')) {
+			$(this).removeClass('fa-volume-up').addClass('fa-volume-off');
+            soundOn = false;
+            localStorage.setItem("soundOn", soundOn);
+		} else if ($(this).hasClass('fa-volume-off')) {
+			$(this).removeClass('fa-volume-off').addClass('fa-volume-up');
+            soundOn = true;
+            localStorage.setItem("soundOn", soundOn);
+		}
+	});
+})
+
 document.addEventListener("keydown", changeDirection)
 
 // Get the canvas element
@@ -76,14 +111,7 @@ ctx.strokestyle = CANVAS_BORDER_COLOUR;
 ctx.fillRect(0, 0, gameCanvas.width, gameCanvas.height);
 // Draw a "border" around the entire canvas
 ctx.strokeRect(0, 0, gameCanvas.width, gameCanvas.height);
-
-// Check browser support for Storage
-if (typeof(Storage) !== "undefined") {
-    // Retrieve best score
-    bestScore = localStorage.getItem("bestScore");
-    document.getElementById("bestScore").innerHTML = 'Best score: ' + (bestScore || 0);
-}
-  
+ 
 
 createFood();
 main();
@@ -99,7 +127,7 @@ function advanceSnake() {
     const head = {x: snake[0].x + dx, y: snake[0].y + dy};
     snake.unshift(head);    
 
-    // check if head is touching food
+    // Check if head is touching food
     const didEatFood = snake[0].x === foodX && snake[0].y === foodY;
     const didEatBadFood = snake[0].x === badFoodX && snake[0].y === badFoodY;
 
@@ -107,7 +135,8 @@ function advanceSnake() {
         score += 1;
         document.getElementById('score').innerHTML = score;
 
-        sounds.pickup.sound.play();
+        if (soundOn === true || soundOn === "true")
+            sounds.pickup.sound.play();
 
         if (score > bestScore) {
             bestScore = score;
@@ -137,7 +166,8 @@ function advanceSnake() {
         badFoodCreated = false;
         score -= 2;
 
-        sounds.hurt.sound.play();
+        if (soundOn === true || soundOn === "true")
+            sounds.hurt.sound.play();
 
         if (score <= 0) {
             score = 0;
@@ -210,7 +240,9 @@ function changeDirection(event) {
 
     if (changingDirection) return; // return if we try change direction too quickly (before GAME_SPEED)
 
-    sounds.turn.sound.play();
+    if (soundOn === true || soundOn === "true")
+        sounds.turn.sound.play();
+
     changingDirection = true;
 
     if (keyPressed === LEFT_KEY && !goingRight) {
@@ -243,7 +275,9 @@ function clearCanvas() {
 
 function main() {
     if (didGameEnd()) {
-        sounds.gameOver.sound.play();
+        if (soundOn === true || soundOn === "true")
+            sounds.gameOver.sound.play();
+    
         document.getElementById('theEnd').style.visibility = 'visible';
         ctx.fillStyle = CANVAS_END_GAME_BACKGROUND_COLOUR;
         ctx.fillRect(0, 0, gameCanvas.width, gameCanvas.height);
@@ -265,8 +299,7 @@ function main() {
         advanceSnake();
         drawSnake();
 
-        // Call main again
-        main();
+        main(); // Call main again
     }, GAME_SPEED)
 }
 
@@ -334,8 +367,10 @@ function didGameEnd() {
     const hitToptWall = snake[0].y < 0;
     const hitBottomWall = snake[0].y > gameCanvas.height - 10;
 
-    if (hitLeftWall || hitRightWall || hitToptWall || hitBottomWall)
-        sounds.hurt.sound.play();
+    if (hitLeftWall || hitRightWall || hitToptWall || hitBottomWall) {
+        if (soundOn === true || soundOn === "true")
+            sounds.hurt.sound.play();
+    }
 
     return hitLeftWall || hitRightWall || hitToptWall || hitBottomWall || endGame;
 }

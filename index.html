@@ -2,6 +2,7 @@
 <html>
 	<head>
 		<title>Web Snake Game</title>
+		<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.11.2/css/all.css">
 		<link rel="stylesheet" type="text/css" href="snake.css">
 	</head>
 
@@ -9,12 +10,18 @@
 		<div>
 			<div id="gameTitle" class="center">WEB SNAKE</div>
 			<div id="score" class="center">0</div>
-			<canvas id="gameCanvas" width="400" height="400"></canvas>
-			<div id="bestScore" class="center"></div>
-			<div class="center"><p style="margin: 0;">Use WASD keys to move. SPACE/ENTER to restart.</p></div>
-			<div id="theEnd" class="center" style="visibility: hidden;">
-				<span>THE END</span>
-				<span id="btnPlayAgain" onclick="playAgain()">PLAY AGAIN</span>
+			<div><i id="volume" class="fas fa-volume-up"></i></div>
+			<div class="canvas">
+				<canvas id="gameCanvas" width="400" height="400"></canvas>
+				<div id="theEnd" style="visibility: hidden;">
+					<span>THE END</span>
+					<br>
+					<span id="btnPlayAgain" onclick="playAgain()">PLAY AGAIN</span>
+				</div>
+			</div>
+			<div class="score_div">
+				<div id="bestScore" class="center"></div>
+				<div class="center"><p style="margin: 0;">Use WASD keys to move. SPACE/ENTER to restart.</p></div>
 			</div>
 		</div>
 

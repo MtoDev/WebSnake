@@ -5,13 +5,12 @@ body {
     font-size: 60px;
 }
 
-#gameCanvas {
-    position: relative;
-    border: 12px ridge rgba(123,65,5,0.75);
-}
-
 p {
     font-size: .5em;
+}
+
+#gameCanvas {
+    border: 12px ridge rgba(123,65,5,0.75);
 }
 
 #btnPlayAgain {
@@ -24,5 +23,19 @@ p {
 }
 
 #btnPlayAgain:hover {
-    background-color: white;
+    background-color: #a2d483;
+}
+
+#theEnd {
+    position: relative;
+    top: -300px;
+}
+
+.canvas {    
+    position: relative;
+}
+
+.score_div {
+    position: relative;
+    top: -130px;
 }
