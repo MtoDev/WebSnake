@@ -51,7 +51,11 @@ var sounds =
         gameOver: {
 			sound: new Howl({
 				urls: ['sounds/gameOver.wav'],
-                volume: 0.7
+			})
+        },
+        turn: {
+			sound: new Howl({
+				urls: ['sounds/turn.wav'],
 			})
 		}
 	};
@@ -206,6 +210,7 @@ function changeDirection(event) {
 
     if (changingDirection) return; // return if we try change direction too quickly (before GAME_SPEED)
 
+    sounds.turn.sound.play();
     changingDirection = true;
 
     if (keyPressed === LEFT_KEY && !goingRight) {
