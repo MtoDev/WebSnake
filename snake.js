@@ -196,12 +196,20 @@ function drawSnake() {
 * @param { object } snakePart - The coordinates where the part should be drawn
 */
 function drawSnakePart(snakePart, i) {
-    if (i == 0) // Draw head
-        ctx.fillStyle = SNAKE_HEAD_COLOUR;
-    else if (i % 2 == 1)
-        ctx.fillStyle = SNAKE_COLOUR1; // Set the colour of the snake part 1
-    else
-        ctx.fillStyle = SNAKE_COLOUR2; // Set the colour of the snake part 2
+    // Uncomment this, and comment gradient part, if you want more static look of the snake.
+    // if (i == 0) // Draw head
+    //     ctx.fillStyle = SNAKE_HEAD_COLOUR;
+    // else if (i % 2 == 1)
+    //     ctx.fillStyle = SNAKE_COLOUR1; // Set the colour of the snake part 1
+    // else
+    //     ctx.fillStyle = SNAKE_COLOUR2; // Set the colour of the snake part 2
+
+    var gradient = ctx.createLinearGradient(0, 0, 400, 400);
+    // Add three color stops
+    gradient.addColorStop(0, 'green');
+    gradient.addColorStop(.5, '#e5e515');
+    gradient.addColorStop(1, 'green');
+    ctx.fillStyle = gradient;
     
     // Set the border colour of the snake part
     ctx.strokeStyle = SNAKE_BORDER_COLOUR;
