@@ -144,23 +144,38 @@ function advanceSnake() {
             localStorage.setItem("bestScore", score);
             document.getElementById("bestScore").innerHTML = 'Best score: ' + bestScore;
         }
-
-        if (score == 5)
-            GAME_SPEED = GAME_SPEED_CONST * 0.8;
-        else if (score == 10)
-            GAME_SPEED = GAME_SPEED_CONST * 0.7;
-        else if (score == 15)
-            GAME_SPEED = GAME_SPEED_CONST * 0.65;
-        else if (score == 20)
-            GAME_SPEED = GAME_SPEED_CONST * 0.6;
-        else if (score == 25)
-            GAME_SPEED = GAME_SPEED_CONST * 0.55;
-        else if (score == 30)
-            GAME_SPEED = GAME_SPEED_CONST * 0.50;
-        else if (score == 35)
-            GAME_SPEED = GAME_SPEED_CONST * 0.45;
-        else if (score == 40)
-            GAME_SPEED = GAME_SPEED_CONST * 0.4;
+        
+        switch (getLevel()) {
+            case 1:
+                GAME_SPEED = GAME_SPEED_CONST;
+                break;
+            case 2:
+                GAME_SPEED = GAME_SPEED_CONST * 0.8;
+                break;
+            case 3:
+                GAME_SPEED = GAME_SPEED_CONST * 0.7;
+                break;
+            case 4:
+                GAME_SPEED = GAME_SPEED_CONST * 0.65;
+                break;
+            case 5:
+                GAME_SPEED = GAME_SPEED_CONST * 0.6;
+                break;
+            case 6:
+                GAME_SPEED = GAME_SPEED_CONST * 0.55;
+                break;
+            case 7:
+                GAME_SPEED = GAME_SPEED_CONST * 0.50;
+                break;
+            case 8:
+                GAME_SPEED = GAME_SPEED_CONST * 0.45;
+                break;
+            case 9:
+                GAME_SPEED = GAME_SPEED_CONST * 0.4;
+                break;
+            default:
+                GAME_SPEED = GAME_SPEED_CONST;
+        }        
 
         createFood(); // create new food and dont pop snake's element => grow by one
     } else if (didEatBadFood) {
@@ -386,4 +401,27 @@ function didGameEnd() {
 
 function playAgain() {
     window.location.reload();
+}
+
+function getLevel() {
+    var lvl = 1;
+
+    if (score >= 5 && score < 10)
+        lvl = 2;
+    else if (score >= 10 && score < 15)
+        lvl = 3;
+    else if (score >= 15 && score < 20)
+        lvl = 4;
+    else if (score >= 20 && score < 25)
+        lvl = 5;
+    else if (score >= 25 && score < 30)
+        lvl = 6;
+    else if (score >= 30 && score < 35)
+        lvl = 7;
+    else if (score >= 35 && score < 40)
+        lvl = 8;
+    else if (score >= 40)
+        lvl = 9;
+
+    return lvl;
 }
