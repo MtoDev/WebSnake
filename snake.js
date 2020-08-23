@@ -1,6 +1,7 @@
 /* CONSTANTS AND GLOBAL VARIABLES */
-const GAME_SPEED_CONST = 100;
+const GAME_SPEED_CONST = 70;
 var GAME_SPEED = GAME_SPEED_CONST;
+const SNAKE_PART_SIZE = 20;
 const CANVAS_BORDER_COLOUR = 'black';
 const CANVAS_BACKGROUND_COLOUR = "#a2d483";
 const CANVAS_END_GAME_BACKGROUND_COLOUR = '#ff9e9e';
@@ -23,15 +24,15 @@ var endGame = false;
 
 let snake = [
     {x: (gameCanvasWidth / 2),      y: gameCanvasHeight / 2},
-    {x: (gameCanvasWidth / 2) - 10, y: gameCanvasHeight / 2},
-    {x: (gameCanvasWidth / 2) - 20, y: gameCanvasHeight / 2},
-    {x: (gameCanvasWidth / 2) - 30, y: gameCanvasHeight / 2},
-    {x: (gameCanvasWidth / 2) - 40, y: gameCanvasHeight / 2}
+    {x: (gameCanvasWidth / 2) - SNAKE_PART_SIZE, y: gameCanvasHeight / 2},
+    {x: (gameCanvasWidth / 2) - SNAKE_PART_SIZE * 2, y: gameCanvasHeight / 2},
+    {x: (gameCanvasWidth / 2) - SNAKE_PART_SIZE * 3, y: gameCanvasHeight / 2},
+    {x: (gameCanvasWidth / 2) - SNAKE_PART_SIZE * 4, y: gameCanvasHeight / 2}
 ];
 
 let score = 0; // Game score
 let changingDirection = false; // When set to true the snake is changing direction
-let dx = 10; // Horizontal velocity
+let dx = SNAKE_PART_SIZE; // Horizontal velocity
 let dy = 0; // Vertical velocity
 
 var soundOn;
@@ -215,9 +216,9 @@ function drawSnakePart(snakePart, i) {
     ctx.strokeStyle = SNAKE_BORDER_COLOUR;
     // Draw a "filled" rectangle to represent the snake part at the coordinates
     // the part is located
-    ctx.fillRect(snakePart.x, snakePart.y, 10, 10);
+    ctx.fillRect(snakePart.x, snakePart.y, SNAKE_PART_SIZE, SNAKE_PART_SIZE);
     // Draw a border around the snake part
-    ctx.strokeRect(snakePart.x, snakePart.y, 10, 10);
+    ctx.strokeRect(snakePart.x, snakePart.y, SNAKE_PART_SIZE, SNAKE_PART_SIZE);
 }
 
 /**
@@ -231,19 +232,19 @@ function changeDirection(event) {
     // const DOWN_KEY = 40;    // S 83
 
     const ENTER_KEY = 13;
-    const SPACE_KEY = 32;
+    const SHIFT_KEY = 16;
     const LEFT_KEY = 65;    // A 65
     const RIGHT_KEY = 68;   // D 68
     const UP_KEY = 87;      // W 87
     const DOWN_KEY = 83;    // S 83
 
     const keyPressed = event.keyCode;
-    const goingUp = dy === -10;
-    const goingDown = dy === 10;
-    const goingRight = dx === 10;
-    const goingLeft = dx === -10;    
+    const goingUp = dy === -SNAKE_PART_SIZE;
+    const goingDown = dy === SNAKE_PART_SIZE;
+    const goingRight = dx === SNAKE_PART_SIZE;
+    const goingLeft = dx === -SNAKE_PART_SIZE;    
 
-    if (keyPressed === ENTER_KEY || keyPressed === SPACE_KEY) // Restart game (refresh page)
+    if (keyPressed === ENTER_KEY || keyPressed === SHIFT_KEY) // Restart game (refresh page)
         window.location.reload();
 
     if (changingDirection) return; // return if we try change direction too quickly (before GAME_SPEED)
@@ -254,23 +255,23 @@ function changeDirection(event) {
     changingDirection = true;
 
     if (keyPressed === LEFT_KEY && !goingRight) {
-        dx = -10;
+        dx = -SNAKE_PART_SIZE;
         dy = 0;
     }
 
     if (keyPressed === UP_KEY && !goingDown) {
         dx = 0;
-        dy = -10;
+        dy = -SNAKE_PART_SIZE;
     }
 
     if (keyPressed === RIGHT_KEY && !goingLeft) {
-        dx = 10;
+        dx = SNAKE_PART_SIZE;
         dy = 0;
     }
 
     if (keyPressed === DOWN_KEY && !goingUp) {
         dx = 0;
-        dy = 10;
+        dy = SNAKE_PART_SIZE;
     }
 }
 
@@ -312,13 +313,13 @@ function main() {
 }
 
 //* CREATE FOOD
-function randomTen(min, max) {
-    return Math.round((Math.random() * (max-min) + min) / 10) * 10;
+function randomNum(min, max) {
+    return Math.round((Math.random() * (max-min) + min) / SNAKE_PART_SIZE) * SNAKE_PART_SIZE;
 }
 
 function createFood() {
-    foodX = randomTen(0, gameCanvasWidth - 10);
-    foodY = randomTen(0, gameCanvasHeight - 10);
+    foodX = randomNum(0, gameCanvasWidth - SNAKE_PART_SIZE);
+    foodY = randomNum(0, gameCanvasHeight - SNAKE_PART_SIZE);
 
     snake.forEach(function isFoodOnSnake(part) {
         const foodIsOnSnake = part.x == foodX && part.y == foodY
@@ -330,8 +331,8 @@ function createFood() {
 
 function createBadFood() {
     if (!badFoodCreated) {
-        badFoodX = randomTen(0, gameCanvasWidth - 10);
-        badFoodY = randomTen(0, gameCanvasHeight - 10);
+        badFoodX = randomNum(0, gameCanvasWidth - SNAKE_PART_SIZE);
+        badFoodY = randomNum(0, gameCanvasHeight - SNAKE_PART_SIZE);
 
         snake.forEach(function isFoodOnSnake(part) {
             const foodIsOnSnake = part.x == badFoodX && part.y == badFoodY;
@@ -346,7 +347,7 @@ function createBadFood() {
 
 function drawFood() {
     ctx.beginPath();
-    ctx.arc(foodX + 5, foodY + 5, 5, 0, 2 * Math.PI, false);				
+    ctx.arc(foodX + (SNAKE_PART_SIZE / 2), foodY + (SNAKE_PART_SIZE / 2), (SNAKE_PART_SIZE / 2), 0, 2 * Math.PI, false);				
     ctx.fillStyle = FOOD_COLOUR;
     ctx.strokestyle = FOOD_BORDER_COLOUR;
     ctx.fill();
@@ -355,7 +356,7 @@ function drawFood() {
 
 function drawBadFood() {
     ctx.beginPath();
-    ctx.arc(badFoodX + 5, badFoodY + 5, 5, 0, 2 * Math.PI, false);				
+    ctx.arc(badFoodX + (SNAKE_PART_SIZE / 2), badFoodY + (SNAKE_PART_SIZE / 2), SNAKE_PART_SIZE / 2, 0, 2 * Math.PI, false);				
     ctx.fillStyle = BAD_FOOD_COLOUR;
     ctx.strokestyle = FOOD_BORDER_COLOUR;
     ctx.fill();
@@ -371,9 +372,9 @@ function didGameEnd() {
     }
 
     const hitLeftWall = snake[0].x < 0;
-    const hitRightWall = snake[0].x > gameCanvas.width - 10;
+    const hitRightWall = snake[0].x > gameCanvas.width - SNAKE_PART_SIZE;
     const hitToptWall = snake[0].y < 0;
-    const hitBottomWall = snake[0].y > gameCanvas.height - 10;
+    const hitBottomWall = snake[0].y > gameCanvas.height - SNAKE_PART_SIZE;
 
     if (hitLeftWall || hitRightWall || hitToptWall || hitBottomWall) {
         if (soundOn === true || soundOn === "true")

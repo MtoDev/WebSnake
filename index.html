@@ -9,10 +9,10 @@
 	<body>
 		<div>
 			<div id="gameTitle" class="center">WEB SNAKE</div>
-			<div id="score" class="center">0</div>
-			<div><i id="volume" class="fas fa-volume-up"></i></div>
+			<span id="score" class="center">0</span><span style="padding-left: 40px;"><i id="volume" class="fas fa-volume-up"></i></span>
+			
 			<div class="canvas">
-				<canvas id="gameCanvas" width="400" height="400"></canvas>
+				<canvas id="gameCanvas" width="600" height="600"></canvas>
 				<div id="theEnd" style="visibility: hidden;">
 					<span>THE END</span>
 					<br>
@@ -22,7 +22,7 @@
 			<div class="score_div">
 				<div id="bestScore" class="center"></div>
 				<div class="center">
-					<p>Use <span class="span_c">WASD</span> keys to move. <span class="span_c">SPACE/ENTER</span> to restart.</p>
+					<p>Use <span class="span_c">WASD</span> keys to move. <span class="span_c">SHIFT/ENTER</span> to restart.</p>
 					<p>Eat <span class="span_c yellow">YELLOW</span>, not <span class="span_c red">RED</span>.</p>
 				</div>
 			</div>
