@@ -1,5 +1,5 @@
 /* CONSTANTS AND GLOBAL VARIABLES */
-const GAME_SPEED_CONST = 70;
+const GAME_SPEED_CONST = 80;
 var GAME_SPEED = GAME_SPEED_CONST;
 const SNAKE_PART_SIZE = 20;
 const CANVAS_BORDER_COLOUR = 'black';
@@ -11,23 +11,27 @@ const SNAKE_COLOUR2 = 'LimeGreen';
 const SNAKE_BORDER_COLOUR = 'darkgreen';
 const FOOD_COLOUR = 'gold';
 const BAD_FOOD_COLOUR = 'red';
-const FOOD_BORDER_COLOUR = 'darkred';
+const DEADLY_FOOD_COLOUR = 'black';
+const FOOD_BORDER_COLOUR = 'red';
 const gameCanvasWidth = document.getElementById("gameCanvas").width;
 const gameCanvasHeight = document.getElementById("gameCanvas").height;
 
 var badFoodCreated = false;
+var deadlyFoodCreated = false;
 var foodX = -1;
 var foodY = -1;
-var badFoodX = -1;
-var badFoodY = -1;
+var deadlyFoodX = -100;
+var deadlyFoodY = -100;
+var nbOfBadFood = 1;
+var badFood_arr = [];
 var endGame = false;
 
 let snake = [
-    {x: (gameCanvasWidth / 2),      y: gameCanvasHeight / 2},
-    {x: (gameCanvasWidth / 2) - SNAKE_PART_SIZE, y: gameCanvasHeight / 2},
-    {x: (gameCanvasWidth / 2) - SNAKE_PART_SIZE * 2, y: gameCanvasHeight / 2},
-    {x: (gameCanvasWidth / 2) - SNAKE_PART_SIZE * 3, y: gameCanvasHeight / 2},
-    {x: (gameCanvasWidth / 2) - SNAKE_PART_SIZE * 4, y: gameCanvasHeight / 2}
+    {x: (gameCanvasWidth / 2),                          y: gameCanvasHeight / 2},
+    {x: (gameCanvasWidth / 2) - SNAKE_PART_SIZE,        y: gameCanvasHeight / 2},
+    {x: (gameCanvasWidth / 2) - SNAKE_PART_SIZE * 2,    y: gameCanvasHeight / 2},
+    {x: (gameCanvasWidth / 2) - SNAKE_PART_SIZE * 3,    y: gameCanvasHeight / 2},
+    {x: (gameCanvasWidth / 2) - SNAKE_PART_SIZE * 4,    y: gameCanvasHeight / 2}
 ];
 
 let score = 0; // Game score
@@ -51,12 +55,12 @@ var sounds =
         },
         gameOver: {
 			sound: new Howl({
-				urls: ['sounds/gameOver.wav'],
+				urls: ['sounds/gameOver.wav']
 			})
         },
         turn: {
 			sound: new Howl({
-				urls: ['sounds/turn.wav'],
+				urls: ['sounds/turn.wav']
 			})
 		}
 	};
@@ -129,8 +133,12 @@ function advanceSnake() {
     snake.unshift(head);    
 
     // Check if head is touching food
-    const didEatFood = snake[0].x === foodX && snake[0].y === foodY;
-    const didEatBadFood = snake[0].x === badFoodX && snake[0].y === badFoodY;
+    var didEatFood = snake[0].x === foodX && snake[0].y === foodY;
+    var didEatBadFood = false;
+    badFood_arr.forEach(function checkBadFood(bFood) {
+        if (snake[0].x === bFood[0] && snake[0].y === bFood[1])
+            didEatBadFood = true;
+    });    
 
     if (didEatFood) {
         score += 1;
@@ -142,7 +150,7 @@ function advanceSnake() {
         if (score > bestScore) {
             bestScore = score;
             localStorage.setItem("bestScore", score);
-            document.getElementById("bestScore").innerHTML = 'Best score: ' + bestScore;
+            document.getElementById("bestScore").innerHTML = 'BEST SCORE: ' + bestScore;
         }
         
         switch (getLevel()) {
@@ -151,21 +159,40 @@ function advanceSnake() {
                 break;
             case 2:
                 GAME_SPEED = GAME_SPEED_CONST * 0.8;
+                nbOfBadFood = 2;
+                badFoodCreated = false;
+                createBadFood();
                 break;
             case 3:
                 GAME_SPEED = GAME_SPEED_CONST * 0.7;
+                if (!deadlyFoodCreated) {
+                    createDeadlyFood();
+                    drawDeadlyFood();
+                }
                 break;
             case 4:
                 GAME_SPEED = GAME_SPEED_CONST * 0.65;
+                nbOfBadFood = 3;
+                badFoodCreated = false;
+                createBadFood();
                 break;
             case 5:
                 GAME_SPEED = GAME_SPEED_CONST * 0.6;
+                nbOfBadFood = 4;
+                badFoodCreated = false;
+                createBadFood();
                 break;
             case 6:
                 GAME_SPEED = GAME_SPEED_CONST * 0.55;
+                nbOfBadFood = 5;
+                badFoodCreated = false;
+                createBadFood();
                 break;
             case 7:
                 GAME_SPEED = GAME_SPEED_CONST * 0.50;
+                nbOfBadFood = 6;
+                badFoodCreated = false;
+                createBadFood();
                 break;
             case 8:
                 GAME_SPEED = GAME_SPEED_CONST * 0.45;
@@ -181,6 +208,7 @@ function advanceSnake() {
     } else if (didEatBadFood) {
         badFoodCreated = false;
         score -= 2;
+        badFood_arr = removeFood(badFood_arr, snake[0].x, snake[0].y);
 
         if (soundOn === true || soundOn === "true")
             sounds.hurt.sound.play();
@@ -307,6 +335,7 @@ function main() {
         ctx.fillRect(0, 0, gameCanvas.width, gameCanvas.height);
         drawFood();
         drawBadFood();
+        drawDeadlyFood();
         drawSnake();
         return;
     }
@@ -319,7 +348,8 @@ function main() {
         if (!badFoodCreated)
             createBadFood();
 
-        drawBadFood();	
+        drawBadFood();
+        drawDeadlyFood();	
         advanceSnake();
         drawSnake();
 
@@ -336,27 +366,66 @@ function createFood() {
     foodX = randomNum(0, gameCanvasWidth - SNAKE_PART_SIZE);
     foodY = randomNum(0, gameCanvasHeight - SNAKE_PART_SIZE);
 
-    snake.forEach(function isFoodOnSnake(part) {
-        const foodIsOnSnake = part.x == foodX && part.y == foodY
+    var goodFoodIsOnBadFood = false;
+    badFood_arr.forEach(function checkBadFood(bFood) {
+        if (foodX === bFood[0] && foodY === bFood[1])
+            goodFoodIsOnBadFood = true;
+    });
+    
+    var goodFoodIsOnDeadlyFood = foodX == deadlyFoodX && foodY == deadlyFoodY;
 
-        if (foodIsOnSnake)
+    snake.forEach(function isFoodOnSnake(part) {
+        var foodIsOnSnake = part.x == foodX && part.y == foodY
+
+        if (foodIsOnSnake || goodFoodIsOnBadFood || goodFoodIsOnDeadlyFood)
             createFood();
     });
 }
 
 function createBadFood() {
-    if (!badFoodCreated) {
-        badFoodX = randomNum(0, gameCanvasWidth - SNAKE_PART_SIZE);
-        badFoodY = randomNum(0, gameCanvasHeight - SNAKE_PART_SIZE);
+    var tmp_badFood_arr = badFood_arr;
+    for (var i = 0; tmp_badFood_arr.length < nbOfBadFood && i < 400; i++) {
+        if (!badFoodCreated) {
+            var badFoodX = randomNum(0, gameCanvasWidth - SNAKE_PART_SIZE);
+            var badFoodY = randomNum(0, gameCanvasHeight - SNAKE_PART_SIZE);            
+            var badFoodIsOnGoodFood = badFoodX == foodX && badFoodY == foodY;
+            var badFoodIsOnDeadlyFood = badFoodX == deadlyFoodX && badFoodY == deadlyFoodY;
+
+            snake.forEach(function isFoodOnSnake(part) {
+                var foodIsOnSnake = part.x == badFoodX && part.y == badFoodY;
+
+                if (foodIsOnSnake || badFoodIsOnGoodFood || badFoodIsOnDeadlyFood)
+                    createBadFood();
+            });
+
+            tmp_badFood_arr.push([badFoodX, badFoodY]);
+        }
+    }
+    badFood_arr = tmp_badFood_arr;
+    badFoodCreated = true;
+}
+
+function createDeadlyFood() {
+    if (!deadlyFoodCreated) {
+        deadlyFoodX = randomNum(0, gameCanvasWidth - SNAKE_PART_SIZE);
+        deadlyFoodY = randomNum(0, gameCanvasHeight - SNAKE_PART_SIZE);
+
+        var deadlyFoodIsOnBadFood = false;
+        badFood_arr.forEach(function checkBadFood(bFood) {
+            if (foodX === bFood[0] && foodY === bFood[1])
+                goodFoodIsOnBadFood = true;
+        });
+
+        var deadlyFoodIsOnGoodFood = deadlyFoodX == foodX && deadlyFoodY == foodY;
 
         snake.forEach(function isFoodOnSnake(part) {
-            const foodIsOnSnake = part.x == badFoodX && part.y == badFoodY;
-            const badFoodOnGoodFood = badFoodX == foodX || badFoodY == foodY;
+            var foodIsOnSnake = part.x == deadlyFoodX && part.y == deadlyFoodY
 
-            if (foodIsOnSnake || badFoodOnGoodFood)
-                createBadFood();
+            if (foodIsOnSnake || deadlyFoodIsOnBadFood || deadlyFoodIsOnGoodFood)
+                createDeadlyFood();
         });
-        badFoodCreated = true;
+
+        deadlyFoodCreated = true;
     }
 }
 
@@ -370,9 +439,20 @@ function drawFood() {
 }
 
 function drawBadFood() {
+    badFood_arr.forEach(function drawBFood(bFood) {
+        ctx.beginPath();
+        ctx.arc(bFood[0] + (SNAKE_PART_SIZE / 2), bFood[1] + (SNAKE_PART_SIZE / 2), SNAKE_PART_SIZE / 2, 0, 2 * Math.PI, false);				
+        ctx.fillStyle = BAD_FOOD_COLOUR;
+        ctx.strokestyle = FOOD_BORDER_COLOUR;
+        ctx.fill();
+        ctx.stroke();
+    });
+}
+
+function drawDeadlyFood() {
     ctx.beginPath();
-    ctx.arc(badFoodX + (SNAKE_PART_SIZE / 2), badFoodY + (SNAKE_PART_SIZE / 2), SNAKE_PART_SIZE / 2, 0, 2 * Math.PI, false);				
-    ctx.fillStyle = BAD_FOOD_COLOUR;
+    ctx.arc(deadlyFoodX + (SNAKE_PART_SIZE / 2), deadlyFoodY + (SNAKE_PART_SIZE / 2), (SNAKE_PART_SIZE / 2), 0, 2 * Math.PI, false);				
+    ctx.fillStyle = DEADLY_FOOD_COLOUR;
     ctx.strokestyle = FOOD_BORDER_COLOUR;
     ctx.fill();
     ctx.stroke();
@@ -390,13 +470,14 @@ function didGameEnd() {
     const hitRightWall = snake[0].x > gameCanvas.width - SNAKE_PART_SIZE;
     const hitToptWall = snake[0].y < 0;
     const hitBottomWall = snake[0].y > gameCanvas.height - SNAKE_PART_SIZE;
+    const hitDeadlyFood = snake[0].x == deadlyFoodX && snake[0].y == deadlyFoodY;
 
-    if (hitLeftWall || hitRightWall || hitToptWall || hitBottomWall) {
+    if (hitLeftWall || hitRightWall || hitToptWall || hitBottomWall || hitDeadlyFood) {
         if (soundOn === true || soundOn === "true")
             sounds.hurt.sound.play();
     }
 
-    return hitLeftWall || hitRightWall || hitToptWall || hitBottomWall || endGame;
+    return hitLeftWall || hitRightWall || hitToptWall || hitBottomWall || hitDeadlyFood || endGame;
 }
 
 function playAgain() {
@@ -424,4 +505,17 @@ function getLevel() {
         lvl = 9;
 
     return lvl;
+}
+
+function removeFood(arr, x, y) {
+    var index = -1;
+    for (var k = 0; k < arr.length; k++){
+        if (arr[k][0] == x && arr[k][1] == y){
+            index = k;
+            break;
+        }
+    }
+
+    var spl = arr.splice(index, 1); // This has to be like this! Do not do return arr.splice(index, 1);!
+    return arr;
 }

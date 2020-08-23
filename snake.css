@@ -30,7 +30,7 @@ p {
 
 #theEnd {
     position: relative;
-    top: -300px;
+    top: -400px;
 }
 
 .canvas {    
@@ -48,6 +48,10 @@ p {
 
 .red {
     color: red;
+}
+
+.black {
+    color: black;
 }
 
 .span_c {
