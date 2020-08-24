@@ -3,16 +3,13 @@ const GAME_SPEED_CONST = 80;
 var GAME_SPEED = GAME_SPEED_CONST;
 const SNAKE_PART_SIZE = 20;
 const CANVAS_BORDER_COLOUR = 'black';
-const CANVAS_BACKGROUND_COLOUR = "#a2d483";
-const CANVAS_END_GAME_BACKGROUND_COLOUR = '#ff9e9e';
-const SNAKE_HEAD_COLOUR = '#174f21';
-const SNAKE_COLOUR1 = 'LimeGreen';
-const SNAKE_COLOUR2 = 'LimeGreen';
-const SNAKE_BORDER_COLOUR = 'darkgreen';
-const FOOD_COLOUR = 'gold';
-const BAD_FOOD_COLOUR = 'red';
+const CANVAS_BACKGROUND_COLOUR = "#9ACC99";
+const SNAKE_COLOUR = 'black';
+const SNAKE_BORDER_COLOUR = "#9ACC99";
+const FOOD_COLOUR = '#dedede';
+const BAD_FOOD_COLOUR = '#6e6e6e';
 const DEADLY_FOOD_COLOUR = 'black';
-const FOOD_BORDER_COLOUR = 'red';
+const FOOD_BORDER_COLOUR = 'black';
 const gameCanvasWidth = document.getElementById("gameCanvas").width;
 const gameCanvasHeight = document.getElementById("gameCanvas").height;
 
@@ -25,19 +22,16 @@ var deadlyFoodY = -100;
 var nbOfBadFood = 1;
 var badFood_arr = [];
 var endGame = false;
+var levelName = "SLUG";
 
 let snake = [
-    {x: (gameCanvasWidth / 2),                          y: gameCanvasHeight / 2},
-    {x: (gameCanvasWidth / 2) - SNAKE_PART_SIZE,        y: gameCanvasHeight / 2},
-    {x: (gameCanvasWidth / 2) - SNAKE_PART_SIZE * 2,    y: gameCanvasHeight / 2},
-    {x: (gameCanvasWidth / 2) - SNAKE_PART_SIZE * 3,    y: gameCanvasHeight / 2},
-    {x: (gameCanvasWidth / 2) - SNAKE_PART_SIZE * 4,    y: gameCanvasHeight / 2}
+    {x: (gameCanvasWidth / 2), y: gameCanvasHeight / 2}
 ];
 
-let score = 0; // Game score
-let changingDirection = false; // When set to true the snake is changing direction
-let dx = SNAKE_PART_SIZE; // Horizontal velocity
-let dy = 0; // Vertical velocity
+let score = 0;      // Game score
+let changingDirection = false;  // When set to true the snake is changing direction
+let dx = SNAKE_PART_SIZE;       // Horizontal velocity
+let dy = 0;         // Vertical velocity
 
 var soundOn;
 var sounds =
@@ -71,7 +65,7 @@ var sounds =
 if (typeof(Storage) !== "undefined") {
     // Retrieve best score
     bestScore = localStorage.getItem("bestScore");
-    document.getElementById("bestScore").innerHTML = 'BEST SCORE: ' + (bestScore || 0);
+    document.getElementById("bestScore").innerHTML = 'BEST SCORE: ' + (padZeros(bestScore, 6) || 000000);
 
     // retrieve sound settings
     soundOn = localStorage.getItem("soundOn") == null ? true : localStorage.getItem("soundOn");
@@ -138,11 +132,13 @@ function advanceSnake() {
     badFood_arr.forEach(function checkBadFood(bFood) {
         if (snake[0].x === bFood[0] && snake[0].y === bFood[1])
             didEatBadFood = true;
-    });    
+    });
+    
+    document.getElementById('level').innerHTML = levelName;
 
     if (didEatFood) {
         score += 1;
-        document.getElementById('score').innerHTML = score;
+        document.getElementById('score').innerHTML = padZeros(score, 6);
 
         if (soundOn === true || soundOn === "true")
             sounds.pickup.sound.play();
@@ -150,7 +146,7 @@ function advanceSnake() {
         if (score > bestScore) {
             bestScore = score;
             localStorage.setItem("bestScore", score);
-            document.getElementById("bestScore").innerHTML = 'BEST SCORE: ' + bestScore;
+            document.getElementById("bestScore").innerHTML = 'BEST SCORE: ' + padZeros(bestScore, 6);
         }
         
         switch (getLevel()) {
@@ -217,7 +213,7 @@ function advanceSnake() {
             score = 0;
             endGame = true;
         }
-        document.getElementById('score').innerHTML = score;
+        document.getElementById('score').innerHTML = padZeros(score, 6);
 
         snake.pop();	// take two parts away
         snake.pop();
@@ -240,20 +236,7 @@ function drawSnake() {
 * @param { object } snakePart - The coordinates where the part should be drawn
 */
 function drawSnakePart(snakePart, i) {
-    // Uncomment this, and comment gradient part, if you want more static look of the snake.
-    // if (i == 0) // Draw head
-    //     ctx.fillStyle = SNAKE_HEAD_COLOUR;
-    // else if (i % 2 == 1)
-    //     ctx.fillStyle = SNAKE_COLOUR1; // Set the colour of the snake part 1
-    // else
-    //     ctx.fillStyle = SNAKE_COLOUR2; // Set the colour of the snake part 2
-
-    var gradient = ctx.createLinearGradient(0, 0, 400, 400);
-    // Add three color stops
-    gradient.addColorStop(0, 'green');
-    gradient.addColorStop(.5, '#e5e515');
-    gradient.addColorStop(1, 'green');
-    ctx.fillStyle = gradient;
+    ctx.fillStyle = SNAKE_COLOUR;
     
     // Set the border colour of the snake part
     ctx.strokeStyle = SNAKE_BORDER_COLOUR;
@@ -331,8 +314,6 @@ function main() {
             sounds.gameOver.sound.play();
     
         document.getElementById('theEnd').style.visibility = 'visible';
-        ctx.fillStyle = CANVAS_END_GAME_BACKGROUND_COLOUR;
-        ctx.fillRect(0, 0, gameCanvas.width, gameCanvas.height);
         drawFood();
         drawBadFood();
         drawDeadlyFood();
@@ -358,10 +339,6 @@ function main() {
 }
 
 //* CREATE FOOD
-function randomNum(min, max) {
-    return Math.round((Math.random() * (max-min) + min) / SNAKE_PART_SIZE) * SNAKE_PART_SIZE;
-}
-
 function createFood() {
     for (var i = 0; i < 400; i++) { // Only 400 loops to avoid potential deadloop
         foodX = randomNum(0, gameCanvasWidth - SNAKE_PART_SIZE);
@@ -464,7 +441,10 @@ function drawDeadlyFood() {
     ctx.stroke();
 }
 
-function didGameEnd() {
+function didGameEnd() {    
+    if (snake[0] === undefined)
+        return true;
+
     for (let i = 4; i < snake.length; i++) {
         const didCollide = snake[i].x === snake[0].x && snake[i].y === snake[0].y;
 
@@ -497,14 +477,18 @@ function getLevel() {
         lvl = 2;
     else if (score >= 10 && score < 15)
         lvl = 3;
-    else if (score >= 15 && score < 20)
+    else if (score >= 15 && score < 20) {
         lvl = 4;
+        levelName = "WORM";
+    }
     else if (score >= 20 && score < 25)
         lvl = 5;
     else if (score >= 25 && score < 30)
         lvl = 6;
-    else if (score >= 30 && score < 35)
+    else if (score >= 30 && score < 35) {
         lvl = 7;
+        levelName = "PYTHON";
+    }
     else if (score >= 35 && score < 40)
         lvl = 8;
     else if (score >= 40)
@@ -524,4 +508,16 @@ function removeFood(arr, x, y) {
 
     var spl = arr.splice(index, 1); // This has to be like this! Do not do return arr.splice(index, 1);!
     return arr;
+}
+
+function randomNum(min, max) {
+    return Math.round((Math.random() * (max-min) + min) / SNAKE_PART_SIZE) * SNAKE_PART_SIZE;
+}
+
+function padZeros(num, size) {
+    if (num == null)
+        return "000000";
+        
+    var s = "000000" + num;
+    return s.substr(s.length - size);
 }

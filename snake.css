@@ -1,5 +1,6 @@
 body {
-    background-color: #ddddbb;    
+    background-color: #9ACC99;
+    color: #262626;
     font-family: 'Lucida Console', monospace;
     text-align: center;
     font-size: 60px;
@@ -10,51 +11,41 @@ p {
     margin: 0;
 }
 
+span {
+    font-size: .5em;
+}
+
 #gameCanvas {
-    border: 12px ridge rgba(123,65,5,0.75);
+    border: 2px solid black;
 }
 
 #btnPlayAgain {
     display: inline-block;
-    background-color: #ff9e9e;
-    border: 2px solid black;
-    font-size: 20px;				
-    padding: 10px;
+    font-size: 1.9em;
     vertical-align: middle;
     cursor: pointer;
 }
 
-#btnPlayAgain:hover {
-    background-color: #a2d483;
-}
-
 #theEnd {
     position: relative;
-    top: -400px;
+    top: -460px;
+}
+
+#s_volume {
+    padding-left: 20px;
+    padding-right: 20px;
+}
+
+#infos {
+    position: relative;
+    top: -310px
+}
+
+#d_bestScore {
+    position: relative;
+    top: -30px;
 }
 
 .canvas {    
     position: relative;
-}
-
-.score_div {
-    position: relative;
-    top: -150px;
-}
-
-.yellow {
-    color: gold;
-}
-
-.red {
-    color: red;
-}
-
-.black {
-    color: black;
-}
-
-.span_c {
-    background-color: rgba(128, 128, 128, 0.1);
-    font-weight: 700;
 }
