@@ -292,8 +292,8 @@ function changeDirection(event) {
 
     if (changingDirection) return; // return if we try change direction too quickly (before GAME_SPEED)
 
-    if (soundOn === true || soundOn === "true")
-        sounds.turn.sound.play();
+    // if (soundOn === true || soundOn === "true")
+    //     sounds.turn.sound.play();
 
     changingDirection = true;
 
@@ -363,70 +363,76 @@ function randomNum(min, max) {
 }
 
 function createFood() {
-    foodX = randomNum(0, gameCanvasWidth - SNAKE_PART_SIZE);
-    foodY = randomNum(0, gameCanvasHeight - SNAKE_PART_SIZE);
+    for (var i = 0; i < 400; i++) { // Only 400 loops to avoid potential deadloop
+        foodX = randomNum(0, gameCanvasWidth - SNAKE_PART_SIZE);
+        foodY = randomNum(0, gameCanvasHeight - SNAKE_PART_SIZE);
 
-    var goodFoodIsOnBadFood = false;
-    badFood_arr.forEach(function checkBadFood(bFood) {
-        if (foodX === bFood[0] && foodY === bFood[1])
-            goodFoodIsOnBadFood = true;
-    });
-    
-    var goodFoodIsOnDeadlyFood = foodX == deadlyFoodX && foodY == deadlyFoodY;
+        var goodFoodIsOnBadFood = false;
+        badFood_arr.forEach(function checkBadFood(bFood) {
+            goodFoodIsOnBadFood = foodX === bFood[0] && foodY === bFood[1];
+        });
 
-    snake.forEach(function isFoodOnSnake(part) {
-        var foodIsOnSnake = part.x == foodX && part.y == foodY
+        var goodFoodIsOnDeadlyFood = foodX == deadlyFoodX && foodY == deadlyFoodY;
 
-        if (foodIsOnSnake || goodFoodIsOnBadFood || goodFoodIsOnDeadlyFood)
-            createFood();
-    });
+        var foodIsOnSnake = false;
+        snake.forEach(function isFoodOnSnake(part) {
+            foodIsOnSnake = part.x == foodX && part.y == foodY;
+        });
+
+        if (!foodIsOnSnake && !goodFoodIsOnBadFood && !goodFoodIsOnDeadlyFood)  // If everything is ok, break from the loop.
+            i = 400;
+    }
 }
 
 function createBadFood() {
     var tmp_badFood_arr = badFood_arr;
-    for (var i = 0; tmp_badFood_arr.length < nbOfBadFood && i < 400; i++) {
+    for (var i = 0; tmp_badFood_arr.length < nbOfBadFood && i < 400; i++) { // Only 400 loops to avoid potential deadloop
         if (!badFoodCreated) {
             var badFoodX = randomNum(0, gameCanvasWidth - SNAKE_PART_SIZE);
             var badFoodY = randomNum(0, gameCanvasHeight - SNAKE_PART_SIZE);            
             var badFoodIsOnGoodFood = badFoodX == foodX && badFoodY == foodY;
             var badFoodIsOnDeadlyFood = badFoodX == deadlyFoodX && badFoodY == deadlyFoodY;
 
+            var foodIsOnSnake = false;
             snake.forEach(function isFoodOnSnake(part) {
-                var foodIsOnSnake = part.x == badFoodX && part.y == badFoodY;
-
-                if (foodIsOnSnake || badFoodIsOnGoodFood || badFoodIsOnDeadlyFood)
-                    createBadFood();
+                foodIsOnSnake = part.x == badFoodX && part.y == badFoodY;
             });
+
+            if (!foodIsOnSnake && !badFoodIsOnGoodFood && !badFoodIsOnDeadlyFood)   // If everything is ok, break from the loop.
+                i = 400;
 
             tmp_badFood_arr.push([badFoodX, badFoodY]);
         }
     }
+
     badFood_arr = tmp_badFood_arr;
     badFoodCreated = true;
 }
 
 function createDeadlyFood() {
-    if (!deadlyFoodCreated) {
-        deadlyFoodX = randomNum(0, gameCanvasWidth - SNAKE_PART_SIZE);
-        deadlyFoodY = randomNum(0, gameCanvasHeight - SNAKE_PART_SIZE);
+    for (var i = 0; i < 400; i++) { // only 400 loops to avoid potential deadloop
+        if (!deadlyFoodCreated) {
+            deadlyFoodX = randomNum(0, gameCanvasWidth - SNAKE_PART_SIZE);
+            deadlyFoodY = randomNum(0, gameCanvasHeight - SNAKE_PART_SIZE);
 
-        var deadlyFoodIsOnBadFood = false;
-        badFood_arr.forEach(function checkBadFood(bFood) {
-            if (foodX === bFood[0] && foodY === bFood[1])
-                goodFoodIsOnBadFood = true;
-        });
+            var deadlyFoodIsOnBadFood = false;
+            badFood_arr.forEach(function checkBadFood(bFood) {
+                goodFoodIsOnBadFood = foodX === bFood[0] && foodY === bFood[1];
+            });
 
-        var deadlyFoodIsOnGoodFood = deadlyFoodX == foodX && deadlyFoodY == foodY;
+            var deadlyFoodIsOnGoodFood = deadlyFoodX == foodX && deadlyFoodY == foodY;
 
-        snake.forEach(function isFoodOnSnake(part) {
-            var foodIsOnSnake = part.x == deadlyFoodX && part.y == deadlyFoodY
+            var foodIsOnSnake = false;
+            snake.forEach(function isFoodOnSnake(part) {
+                foodIsOnSnake = part.x == deadlyFoodX && part.y == deadlyFoodY
+            });
 
-            if (foodIsOnSnake || deadlyFoodIsOnBadFood || deadlyFoodIsOnGoodFood)
-                createDeadlyFood();
-        });
-
-        deadlyFoodCreated = true;
+            if (!foodIsOnSnake && !deadlyFoodIsOnBadFood && !deadlyFoodIsOnGoodFood)    // If everything is ok, break from the loop.
+                i = 400;
+        }
     }
+
+    deadlyFoodCreated = true;
 }
 
 function drawFood() {
