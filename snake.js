@@ -25,6 +25,7 @@ var deadlyFoodY = -100;
 var nbOfBadFood = 1;
 var badFood_arr = [];
 var endGame = false;
+var isStorageAvailable = isStorageAvailable("localStorage");
 
 let snake = [
     {x: (gameCanvasWidth / 2),                          y: gameCanvasHeight / 2},
@@ -39,7 +40,7 @@ let changingDirection = false; // When set to true the snake is changing directi
 let dx = SNAKE_PART_SIZE; // Horizontal velocity
 let dy = 0; // Vertical velocity
 
-var soundOn;
+var soundOn = true;
 var sounds =
 	{
 		hurt: {
@@ -68,7 +69,7 @@ var sounds =
 /** MAIN PART OF THE GAME CODE **/
 
 // Check browser support for Storage
-if (typeof(Storage) !== "undefined") {
+if (isStorageAvailable) {
     // Retrieve best score
     bestScore = localStorage.getItem("bestScore");
     document.getElementById("bestScore").innerHTML = 'BEST SCORE: ' + (bestScore || 0);
@@ -93,11 +94,13 @@ $(function() {
 		if ($(this).hasClass('fa-volume-up')) {
 			$(this).removeClass('fa-volume-up').addClass('fa-volume-off');
             soundOn = false;
-            localStorage.setItem("soundOn", soundOn);
+            if (isStorageAvailable)
+                localStorage.setItem("soundOn", soundOn);
 		} else if ($(this).hasClass('fa-volume-off')) {
 			$(this).removeClass('fa-volume-off').addClass('fa-volume-up');
             soundOn = true;
-            localStorage.setItem("soundOn", soundOn);
+            if (isStorageAvailable)
+                localStorage.setItem("soundOn", soundOn);
 		}
 	});
 })
@@ -149,7 +152,8 @@ function advanceSnake() {
 
         if (score > bestScore) {
             bestScore = score;
-            localStorage.setItem("bestScore", score);
+            if (isStorageAvailable)
+                localStorage.setItem("bestScore", score);
             document.getElementById("bestScore").innerHTML = 'BEST SCORE: ' + bestScore;
         }
         
@@ -524,4 +528,17 @@ function removeFood(arr, x, y) {
 
     var spl = arr.splice(index, 1); // This has to be like this! Do not do return arr.splice(index, 1);!
     return arr;
+}
+
+function isStorageAvailable(type) {
+    try {
+        var storage = window[type],
+            x = '__storage_test__';
+        storage.setItem(x, x);
+        storage.removeItem(x);
+        return true;
+    }
+    catch(e) {
+        return false;
+    }
 }
